@@ -6,6 +6,12 @@ pto.config(['$routeProvider', function ($routeProvider) {
             controller: 'employeePTOCtrl',
             templateUrl: 'dashboard.htm'
         });
+
+    $routeProvider
+        .otherwise({
+            controller: 'employeePTOCtrl',
+            templateUrl: 'dashboard.htm'
+        });
 }]);
 
 var setStatus = function (status, message) {
