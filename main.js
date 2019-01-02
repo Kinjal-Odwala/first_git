@@ -6,20 +6,10 @@ pto.config(['$routeProvider', function ($routeProvider) {
             controller: 'employeePTOCtrl',
             templateUrl: 'dashboard.htm'
         });
-
-    $routeProvider
-        .otherwise({
-            controller: 'employeePTOCtrl',
-            templateUrl: 'dashboard.htm'
-        });
 }]);
 
 var setStatus = function (status, message) {
     var me = this;
-
-    me.$itemStatusImage = $("#itemStatusImage");
-    me.$itemModifiedImage = $("#itemModifiedImage");
-    me.$itemStatusText = $("#itemStatusText");
 
     me.$itemStatusImage = $("#itemStatusImage");
     me.$itemModifiedImage = $("#itemModifiedImage");
@@ -247,10 +237,7 @@ pto.controller('employeePTOCtrl', ['$scope', 'EmpActions', '$filter', '$sce', '$
 
             if ($scope.ptoYearId > 0 && $scope.initialize) {
                 $scope.getSiteDetails();
-                //if ($scope.currentTabSelected === "Unit Dashboard")
                 $scope.actionDashboardItem();
-                //else if ($scope.currentTabSelected === "Balance hours")
-                //    $scope.actionBalancehoursItem();
                 $scope.initialize = false;
             }
         });
@@ -306,18 +293,18 @@ pto.controller('employeePTOCtrl', ['$scope', 'EmpActions', '$filter', '$sce', '$
         });
     },
 
-        $scope.$watch("dashboard.houseCodeId", function (newValue, oldValue) {
-            if (!newValue && !oldValue)
-                return;
+    $scope.$watch("dashboard.houseCodeId", function (newValue, oldValue) {
+        if (!newValue && !oldValue)
+            return;
 
-            if (newValue !== "" && newValue !== oldValue && !$scope.initialize) {
-                $scope.getSiteDetails();
-                if ($scope.currentTabSelected === "Balance hours")
-                    $scope.actionBalancehoursItem();
-                else
-                    $scope.actionDashboardItem();
-            }
-        });
+        if (newValue !== "" && newValue !== oldValue && !$scope.initialize) {
+            $scope.getSiteDetails();
+            if ($scope.currentTabSelected === "Balance hours")
+                $scope.actionBalancehoursItem();
+            else
+                $scope.actionDashboardItem();
+        }
+    });
 
     $scope.tabClick = function (selectedTab) {
         for (var index = 0; index < selectedTab.$parent.tabs.length; index++) {
