@@ -200,8 +200,6 @@ pto.controller('employeePTOCtrl', ['$scope', 'EmpActions', '$filter', '$sce', '$
     $scope.selectedEmployee = null;
     $scope.selectedPTOType = null;
     $scope.closeDialog = false;
-    $scope.undoBalanceHours = null;
-    $modal.empBHForUndo = [];
 
     var getCurrentHouseCodeId = function (callback) {
         EmpActions.getCurrentHouseCodeId(function (response) {
@@ -223,9 +221,9 @@ pto.controller('employeePTOCtrl', ['$scope', 'EmpActions', '$filter', '$sce', '$
     };
 
     var authorizationsLoaded = function () {
-        var authorizePath = "\\crothall\\chimes\\fin\\PTOSetup";
-        $scope.showPTODashboard = isAuthorized(authorizePath + "\\PTODashboard");
-        $scope.showPTOBH = isAuthorized(authorizePath + "\\PTODashboard");
+        var authorizePath = "\\crothall\\chimes\\fin\\PTOSetup\\PTODashboard";
+        $scope.showUnitDashboard = isAuthorized(authorizePath + "\\UnitDashboard");
+        $scope.showBalanceHours = isAuthorized(authorizePath + "\\BalanceHours");
     };
 
     if ($scope.dashboard.houseCodeId === null) {
@@ -237,7 +235,10 @@ pto.controller('employeePTOCtrl', ['$scope', 'EmpActions', '$filter', '$sce', '$
 
             if ($scope.ptoYearId > 0 && $scope.initialize) {
                 $scope.getSiteDetails();
-                $scope.actionDashboardItem();
+                if ($scope.currentTabSelected === "Unit Dashboard")
+                    $scope.actionDashboardItem();
+                else if ($scope.currentTabSelected === "Balance Hours")
+                    $scope.actionBalancehoursItem();
                 $scope.initialize = false;
             }
         });
@@ -293,18 +294,18 @@ pto.controller('employeePTOCtrl', ['$scope', 'EmpActions', '$filter', '$sce', '$
         });
     },
 
-    $scope.$watch("dashboard.houseCodeId", function (newValue, oldValue) {
-        if (!newValue && !oldValue)
-            return;
+        $scope.$watch("dashboard.houseCodeId", function (newValue, oldValue) {
+            if (!newValue && !oldValue)
+                return;
 
-        if (newValue !== "" && newValue !== oldValue && !$scope.initialize) {
-            $scope.getSiteDetails();
-            if ($scope.currentTabSelected === "Balance hours")
-                $scope.actionBalancehoursItem();
-            else
-                $scope.actionDashboardItem();
-        }
-    });
+            if (newValue !== "" && newValue !== oldValue && !$scope.initialize) {
+                $scope.getSiteDetails();
+                if ($scope.currentTabSelected === "Balance Hours")
+                    $scope.actionBalancehoursItem();
+                else
+                    $scope.actionDashboardItem();
+            }
+        });
 
     $scope.tabClick = function (selectedTab) {
         for (var index = 0; index < selectedTab.$parent.tabs.length; index++) {
@@ -323,7 +324,7 @@ pto.controller('employeePTOCtrl', ['$scope', 'EmpActions', '$filter', '$sce', '$
         else {
             if ($scope.currentTabSelected === "Unit Dashboard")
                 $scope.actionDashboardItem();
-            else if ($scope.currentTabSelected === "Balance hours")
+            else if ($scope.currentTabSelected === "Balance Hours")
                 $scope.actionBalancehoursItem();
         }
 
@@ -357,85 +358,6 @@ pto.controller('employeePTOCtrl', ['$scope', 'EmpActions', '$filter', '$sce', '$
             $scope.employees = employees;
             setStatus("Normal");
         });
-    };
-
-    $scope.onYearChangeBH = function (item) {
-        $scope.ptoYearId = item.id;
-        $scope.actionBalancehoursItem();
-    };
-
-    $scope.actionBalancehoursItem = function () {
-        if ($scope.ptoYearId === 0 || $scope.dashboard.houseCodeId === null)
-            return;
-
-        $scope.planAssignments = [];
-        $scope.employeesBH = [];
-        $scope.empPTOBalanceHoursBH = [];
-        $scope.selectedPlanAssignment = null;
-        $scope.selectedEmployee = null;
-        $scope.selectedPTOType = null;
-        $scope.empBH = [];
-        $scope.empBHptoType = null;
-        $scope.loadingTitle = " Loading...";
-        setStatus("Loading");
-
-        var type = "";
-        var emp = [];
-        var list_emp = [];
-
-        EmpActions.getEmployees($scope.dashboard.houseCodeId, $scope.ptoYearId, 0, 0, 1, function (employees) {
-            $scope.employeesBH = employees;
-            EmpActions.getPTOBalanceHours($scope.ptoYearId, 0, $scope.dashboard.houseCodeId, "BalanceHours", function (result) {
-                $scope.empPTOBalanceHoursBH = result;
-                if ($scope.employeesBH.length > 0) {
-                    for (var index = 0; index < $scope.employeesBH.length; index++) {
-                        var ptoType_1 = [], ptoType_2 = [], ptoType_3 = [], ptoType_4 = [];
-                        ptoType_1.ptype = "1"; ptoType_1.balanceAvailable = "NA"; ptoType_1.balanceUsed = "NA"; ptoType_1.flag = "0"; ptoType_1.empBalanceHourID = "0";
-                        ptoType_2.ptype = "2"; ptoType_2.balanceAvailable = "NA"; ptoType_2.balanceUsed = "NA"; ptoType_2.flag = "0"; ptoType_2.empBalanceHourID = "0";
-                        ptoType_3.ptype = "3"; ptoType_3.balanceAvailable = "NA"; ptoType_3.balanceUsed = "NA"; ptoType_3.flag = "0"; ptoType_3.empBalanceHourID = "0";
-                        ptoType_4.ptype = "4"; ptoType_4.balanceAvailable = "NA"; ptoType_4.balanceUsed = "NA"; ptoType_4.flag = "0"; ptoType_4.empBalanceHourID = "0";
-
-                        var collection = [];
-                        collection.emp = $scope.employeesBH[index];
-                        for (var i = 0; i < $scope.empPTOBalanceHoursBH.length; i++) {
-                            if ($scope.empPTOBalanceHoursBH[i].employeeId == $scope.employeesBH[index].id) {
-                                type = $scope.empPTOBalanceHoursBH[i].ptoType;
-
-                                if (type == "1") {
-                                    ptoType_1.balanceAvailable = $scope.empPTOBalanceHoursBH[i].balanceHours;
-                                    ptoType_1.balanceUsed = $scope.empPTOBalanceHoursBH[i].ptoHours;
-                                    ptoType_1.empBalanceHourID = $scope.empPTOBalanceHoursBH[i].empPTOEmployeeBalanceHourID;
-                                } else if (type == "2") {
-                                    ptoType_2.balanceAvailable = $scope.empPTOBalanceHoursBH[i].balanceHours;
-                                    ptoType_2.balanceUsed = $scope.empPTOBalanceHoursBH[i].ptoHours;
-                                    ptoType_2.empBalanceHourID = $scope.empPTOBalanceHoursBH[i].empPTOEmployeeBalanceHourID;
-                                } else if (type == "3") {
-                                    ptoType_3.balanceAvailable = $scope.empPTOBalanceHoursBH[i].balanceHours;
-                                    ptoType_3.balanceUsed = $scope.empPTOBalanceHoursBH[i].ptoHours;
-                                    ptoType_3.empBalanceHourID = $scope.empPTOBalanceHoursBH[i].empPTOEmployeeBalanceHourID;
-                                } else if (type == "4") {
-                                    ptoType_4.balanceAvailable = $scope.empPTOBalanceHoursBH[i].balanceHours;
-                                    ptoType_4.balanceUsed = $scope.empPTOBalanceHoursBH[i].ptoHours;
-                                    ptoType_4.empBalanceHourID = $scope.empPTOBalanceHoursBH[i].empPTOEmployeeBalanceHourID;
-                                }
-                                else { }
-                                collection.ptoType_1 = ptoType_1;
-                                collection.ptoType_2 = ptoType_2;
-                                collection.ptoType_3 = ptoType_3;
-                                collection.ptoType_4 = ptoType_4;
-                            }
-                        }
-                        list_emp.push(collection);
-                    }
-                }
-                $scope.empBH = list_emp;
-            });
-            setStatus("Normal");
-        });
-    };
-
-    $scope.undoBalanceHours = function () {
-        $scope.actionBalancehoursItem();
     };
 
     $scope.onPlanAssignmentSelected = function (item) {
@@ -614,75 +536,153 @@ pto.controller('employeePTOCtrl', ['$scope', 'EmpActions', '$filter', '$sce', '$
         }
     };
 
-    $scope.SaveBalanceHours = function () {
-        for (var index = 0; index < $scope.empPTOBalanceHours.length; index++) {
-            if ($scope.empPTOBalanceHours[index].status == "changed") {
-                if ($scope.empPTOBalanceHours[index].balanceHours !== "" || $scope.empPTOBalanceHours[index].balanceHours !== undefined) {
-                    var id = $scope.empPTOBalanceHours[index].employeeId;
-                    EmpActions.actionSaveItem($scope, index, 0, "Save Balance Hours");
+    $scope.onYearChangeBH = function (item) {
+        $scope.ptoYearId = item.id;
+        $scope.actionBalancehoursItem();
+    };
+
+    $scope.actionBalancehoursItem = function () {
+        if ($scope.ptoYearId === 0 || $scope.dashboard.houseCodeId === null)
+            return;
+
+        $scope.employeesBH = [];
+        $scope.empPTOBalanceHoursBH = [];
+        $scope.loadingTitle = " Loading...";
+        setStatus("Loading");
+
+        EmpActions.getEmployees($scope.dashboard.houseCodeId, $scope.ptoYearId, 0, 0, 1, function (employees) {
+            $scope.employeesBH = employees;
+            EmpActions.getPTOBalanceHours($scope.ptoYearId, 0, $scope.dashboard.houseCodeId, "BalanceHours", function (result) {
+                $scope.empPTOBalanceHoursBH = result;
+
+                for (var index = 0; index < $scope.employeesBH.length; index++) {
+                    $scope.employeesBH[index].vacationBalanceHourId = 0;
+                    $scope.employeesBH[index].vacationBalanceUsed = 0;
+                    $scope.employeesBH[index].vacationAvailable = 0;
+                    $scope.employeesBH[index].sickBalanceHourId = 0;
+                    $scope.employeesBH[index].sickBalanceUsed = 0;
+                    $scope.employeesBH[index].sickAvailable = 0;
+                    $scope.employeesBH[index].ptoBalanceHourId = 0;
+                    $scope.employeesBH[index].ptoBalanceUsed = 0;
+                    $scope.employeesBH[index].ptoAvailable = 0;
+                    $scope.employeesBH[index].personalBalanceHourId = 0;
+                    $scope.employeesBH[index].personalBalanceUsed = 0;
+                    $scope.employeesBH[index].personalAvailable = 0;
+                    $scope.employeesBH[index].modified = false;
+
+                    for (var iIndex = 0; iIndex < $scope.empPTOBalanceHoursBH.length; iIndex++) {
+                        if ($scope.empPTOBalanceHoursBH[iIndex].employeeId == $scope.employeesBH[index].id) {
+                            var type = $scope.empPTOBalanceHoursBH[iIndex].ptoType;
+
+                            if (type == "1") {
+                                $scope.employeesBH[index].vacationBalanceHourId = $scope.empPTOBalanceHoursBH[iIndex].employeeBalanceHourId;
+                                $scope.employeesBH[index].vacationBalanceUsed = $scope.empPTOBalanceHoursBH[iIndex].ptoHours;
+                                $scope.employeesBH[index].vacationAvailable = $scope.empPTOBalanceHoursBH[iIndex].balanceHours;
+                            }
+                            else if (type == "2") {
+                                $scope.employeesBH[index].sickBalanceHourId = $scope.empPTOBalanceHoursBH[iIndex].employeeBalanceHourId;
+                                $scope.employeesBH[index].sickBalanceUsed = $scope.empPTOBalanceHoursBH[iIndex].ptoHours;
+                                $scope.employeesBH[index].sickAvailable = $scope.empPTOBalanceHoursBH[iIndex].balanceHours;
+                            }
+                            else if (type == "3") {
+                                $scope.employeesBH[index].ptoBalanceHourId = $scope.empPTOBalanceHoursBH[iIndex].employeeBalanceHourId;
+                                $scope.employeesBH[index].ptoBalanceUsed = $scope.empPTOBalanceHoursBH[iIndex].ptoHours;
+                                $scope.employeesBH[index].ptoAvailable = $scope.empPTOBalanceHoursBH[iIndex].balanceHours;
+                            }
+                            else if (type == "4") {
+                                $scope.employeesBH[index].personalBalanceHourId = $scope.empPTOBalanceHoursBH[iIndex].employeeBalanceHourId;
+                                $scope.employeesBH[index].personalBalanceUsed = $scope.empPTOBalanceHoursBH[iIndex].ptoHours;
+                                $scope.employeesBH[index].personalAvailable = $scope.empPTOBalanceHoursBH[iIndex].balanceHours;
+                            }
+                        }
+                    }
                 }
-                else {
-                    showToaster("In order to save, Please enter Balance Available");
+            });
+
+            setStatus("Normal");
+        });
+    };
+
+    $scope.undoBalanceHours = function () {
+        $scope.actionBalancehoursItem();
+    };
+
+    EmpActions.getPTOBalanceHours($scope.ptoYearId, $scope.selectedEmployee.id, $scope.dashboard.houseCodeId, "PTODashboard", function (result) {
+        $scope.empPTOBalanceHours = result;
+        setStatus("Normal");
+    });
+
+    $scope.updateBalanceAvailable = function (index, balanceHours) {
+        $scope.empPTOBalanceHours[index].balanceHours = balanceHours;
+        $scope.empPTOBalanceHours[index].modified = true;
+    };
+
+    $scope.saveBalanceHours = function () {
+        var valid = true;
+
+        for (var index = 0; index < $scope.empPTOBalanceHours.length; index++) {
+            if ($scope.empPTOBalanceHours[index].modified) {
+                if ($scope.empPTOBalanceHours[index].balanceHours === undefined || $scope.empPTOBalanceHours[index].balanceHours === "") {
+                    showToaster("Please enter valid value for Balance Available.");
+                    valid = false;
+                    break;
                 }
             }
         }
-        EmpActions.getPTOBalanceHours($scope.ptoYearId, id, $scope.dashboard.houseCodeId, "PTODashboard", function (result) {
-            $scope.empPTOBalanceHours = result;
-            $scope.pageLoading = false;
-            setStatus("Saved");
-            modified(false);
-        });
-    };
-   
-    $scope.SaveTextbox = function (index, item) {
-        $scope.empPTOBalanceHours[index].balanceHours = item;
-        $scope.empPTOBalanceHours[index].status = "changed";
+
+        if (valid) {
+            EmpActions.actionSaveItem($scope, "SaveBalanceHours", function (data, status) {
+                $scope.$apply(function () {
+                    $scope.pageLoading = false;
+                    setStatus("Saved");
+                    modified(false);
+                });
+            });
+        }
     };
 
-    $scope.save = function (index, item, ptoType) {
+    $scope.updateBalanceHours = function (index, item, ptoType) {
+        $scope.employeesBH[index].modified = true;
+
         if (ptoType == 1) {
-            $scope.empBH[index].ptoType_1.balanceAvailable = item.ptoType_1.balanceAvailable;
-            $scope.empBH[index].ptoType_1.flag = "1";
-        } else if (ptoType == 2) {
-            $scope.empBH[index].ptoType_2.balanceAvailable = item.ptoType_2.balanceAvailable;
-            $scope.empBH[index].ptoType_2.flag = "1";
-        } else if (ptoType == 3) {
-            $scope.empBH[index].ptoType_3.balanceAvailable = item.ptoType_3.balanceAvailable;
-            $scope.empBH[index].ptoType_3.flag = "1";
-        } else if (ptoType == 4) {
-            $scope.empBH[index].ptoType_4.balanceAvailable = item.ptoType_4.balanceAvailable;
-            $scope.empBH[index].ptoType_2.flag = "1";
+            $scope.employeesBH[index].vacationAvailable = item.vacationAvailable;
         }
-        $scope.empBH[index].emp.status = "changed";
+        else if (ptoType == 2) {
+            $scope.employeesBH[index].sickAvailable = item.sickAvailable;
+        }
+        else if (ptoType == 3) {
+            $scope.employeesBH[index].ptoAvailable = item.ptoAvailable;
+        }
+        else if (ptoType == 4) {
+            $scope.employeesBH[index].personalAvailable = item.personalAvailable;
+        }
     };
 
     $scope.saveAllBalanceHours = function () {
-        $scope.empBHptoType = null;
-        for (var index = 0; index < $scope.empBH.length; index++) {
-            if ($scope.empBH[index].emp.status === "changed") {
-                $scope.empBH[index].emp.status = "";
-                CheckAndSave(index, $scope.empBH[index].ptoType_1.flag, $scope.empBH[index].ptoType_1.balanceAvailable, 1, $scope.empBH[index].ptoType_1.empBalanceHourID);
-                CheckAndSave(index, $scope.empBH[index].ptoType_2.flag, $scope.empBH[index].ptoType_2.balanceAvailable, 2, $scope.empBH[index].ptoType_2.empBalanceHourID);
-                CheckAndSave(index, $scope.empBH[index].ptoType_3.flag, $scope.empBH[index].ptoType_3.balanceAvailable, 3, $scope.empBH[index].ptoType_3.empBalanceHourID);
-                CheckAndSave(index, $scope.empBH[index].ptoType_4.flag, $scope.empBH[index].ptoType_4.balanceAvailable, 4, $scope.empBH[index].ptoType_4.empBalanceHourID);
+        var valid = true;
+
+        for (var index = 0; index < $scope.employeesBH.length; index++) {
+            if ($scope.employeesBH[index].modified) {
+                if ($scope.employeesBH[index].vacationAvailable === undefined || $scope.employeesBH[index].vacationAvailable === ""
+                    || $scope.employeesBH[index].sickAvailable === undefined || $scope.employeesBH[index].sickAvailable === ""
+                    || $scope.employeesBH[index].ptoAvailable === undefined || $scope.employeesBH[index].ptoAvailable === ""
+                    || $scope.employeesBH[index].personalAvailable === undefined || $scope.employeesBH[index].personalAvailable === "") {
+                    //  $scope.ptoForm.txt1_balanceHours.$setValidity("required", false);
+                    showToaster("Please enter valid value for Balance Available.");
+                    valid = false;
+                    break;
+                }
             }
         }
-        $scope.pageLoading = false;
-        setStatus("Saved");
-        modified(false);
-    };
 
-    var CheckAndSave = function (index, flag, balanceHours, type, ID) {
-        if (flag == "1") {
-            if (balanceHours === "" || balanceHours === undefined) {
-                //  $scope.ptoForm.txt1_balanceHours.$setValidity("required", false);
-                showToaster("Please enter Balance Available");
-            }
-            else {
-                $scope.empBH[index].emp.empPtoebhBalanceHours = balanceHours;
-                $scope.empBHptoType = type;
-                EmpActions.actionSaveItem($scope, index, ID, "Save all Balance Hours");
-            }
+        if (valid) {
+            EmpActions.actionSaveItem($scope, "SaveAllBalanceHours", function (data, status) {
+                $scope.$apply(function () {
+                    $scope.pageLoading = false;
+                    setStatus("Saved");
+                    modified(false);
+                });
+            });
         }
     };
 
@@ -695,7 +695,7 @@ pto.controller('employeePTOCtrl', ['$scope', 'EmpActions', '$filter', '$sce', '$
 
         setTimeout(function () {
             modalInstance.dismiss('cancel');
-        }, 2800);
+        }, 2000);
     }
 }])
     .directive('ptoTypeahead', ['$filter', function ($filter) {
@@ -808,8 +808,6 @@ pto.controller('employeePTOCtrl', ['$scope', 'EmpActions', '$filter', '$sce', '$
         };
     })
 
-
-
 pto.controller('modalInstanceCtrl', function ($scope, $modalInstance) {
     $scope.ok = function () {
         if ($scope.closeDialog) {
@@ -820,7 +818,6 @@ pto.controller('modalInstanceCtrl', function ($scope, $modalInstance) {
     $scope.cancel = function () {
         $modalInstance.dismiss('cancel');
     };
-
 });
 
 pto.factory('EmpActions', ["$http", "$filter", '$rootScope', function ($http, $filter, $rootScope) {
@@ -955,11 +952,11 @@ pto.factory('EmpActions', ["$http", "$filter", '$rootScope', function ($http, $f
             });
     };
 
-    var getPTOBalanceHours = function (yearId, employeeId, hcmHouseCode, searchType, callback) {
+    var getPTOBalanceHours = function (yearId, employeeId, houseCodeId, searchType, callback) {
         apiRequest('emp', 'iiCache', '<criteria>storeId:ptoEmployeeBalanceHours,userId:[user]'
             + ',yearId:' + yearId
             + ',employeeId:' + employeeId
-            + ',hcmHouseCode:' + hcmHouseCode
+            + ',houseCodeId:' + houseCodeId
             + ',searchType:' + searchType
             + ',</criteria>', function (xml) {
                 if (callback) {
@@ -981,6 +978,76 @@ pto.factory('EmpActions', ["$http", "$filter", '$rootScope', function ($http, $f
                 callback(deserializeXml(xml, 'item', { upperFirstLetter: false, intItems: ['id'], boolItems: ['active'] }));
             }
         });
+    };
+
+    var actionSaveItem = function ($scope, action, callback) {
+        var xml = "";
+
+        if (action === "SaveBalanceHours") {
+            for (var index = 0; index < $scope.empPTOBalanceHours.length; index++) {
+                if ($scope.empPTOBalanceHours[index].modified) {
+                    xml += '<ptoEmployeeBalanceHour';
+                    xml += ' employeeBalanceHourId="' + $scope.empPTOBalanceHours[index].employeeBalanceHourId + '"';
+                    xml += ' ptoYearId="' + $scope.ptoYearId + '"';
+                    xml += ' ptoTypeId="' + $scope.empPTOBalanceHours[index].ptoType + '"';
+                    xml += ' planAssignmentId="0"';
+                    xml += ' balanceHours="' + $scope.empPTOBalanceHours[index].balanceHours + '"';
+                    xml += '/>';
+                }
+            }
+        }
+        else if (action === "SaveAllBalanceHours") {
+            for (var index = 0; index < $scope.employeesBH.length; index++) {
+                if ($scope.employeesBH[index].modified) {
+                    if ($scope.employeesBH[index].vacationBalanceHourId != 0) {
+                        xml += '<ptoEmployeeBalanceHour';
+                        xml += ' employeeBalanceHourId="' + $scope.employeesBH[index].vacationBalanceHourId + '"';
+                        xml += ' ptoYearId="' + $scope.ptoYearId + '"';
+                        xml += ' ptoTypeId="0"';
+                        xml += ' planAssignmentId="0"';
+                        xml += ' balanceHours="' + $scope.employeesBH[index].vacationAvailable + '"';
+                        xml += '/>';
+                    }
+                    if ($scope.employeesBH[index].sickBalanceHourId != 0) {
+                        xml += '<ptoEmployeeBalanceHour';
+                        xml += ' employeeBalanceHourId="' + $scope.employeesBH[index].sickBalanceHourId + '"';
+                        xml += ' ptoYearId="' + $scope.ptoYearId + '"';
+                        xml += ' ptoTypeId="0"';
+                        xml += ' planAssignmentId="0"';
+                        xml += ' balanceHours="' + $scope.employeesBH[index].sickAvailable + '"';
+                        xml += '/>';
+                    }
+                    if ($scope.employeesBH[index].ptoBalanceHourId != 0) {
+                        xml += '<ptoEmployeeBalanceHour';
+                        xml += ' employeeBalanceHourId="' + $scope.employeesBH[index].ptoBalanceHourId + '"';
+                        xml += ' ptoYearId="' + $scope.ptoYearId + '"';
+                        xml += ' ptoTypeId="0"';
+                        xml += ' planAssignmentId="0"';
+                        xml += ' balanceHours="' + $scope.employeesBH[index].ptoAvailable + '"';
+                        xml += '/>';
+                    }
+                    if ($scope.employeesBH[index].personalBalanceHourId != 0) {
+                        xml += '<ptoEmployeeBalanceHour';
+                        xml += ' employeeBalanceHourId="' + $scope.employeesBH[index].personalBalanceHourId + '"';
+                        xml += ' ptoYearId="' + $scope.ptoYearId + '"';
+                        xml += ' ptoTypeId="0"';
+                        xml += ' planAssignmentId="0"';
+                        xml += ' balanceHours="' + $scope.employeesBH[index].personalAvailable + '"';
+                        xml += '/>';
+                    }
+                }
+            }
+        }
+
+        if (xml === "")
+            return;
+        xml = '<transaction id="1">' + xml + '</transaction>';
+        console.log(xml)
+        var data = 'moduleId=emp&requestId=1&requestXml=' + encodeURIComponent(xml) + '&targetId=iiTransaction';
+        setStatus("Saving");
+        $scope.loadingTitle = " Saving...";
+        $scope.pageLoading = true;
+        transactionMonitor($scope, data, callback);
     };
 
     var transactionMonitor = function ($scope, data, callback) {
@@ -1009,41 +1076,6 @@ pto.factory('EmpActions', ["$http", "$filter", '$rootScope', function ($http, $f
         });
     };
 
-    var actionSaveItem = function ($scope, index, id, action, callback) {
-        var xml = "";
-
-        if (action === "Save Balance Hours") {
-            xml += '<updateBalanceHour';
-            xml += ' empPTOEmployeeBalanceHour="' + $scope.empPTOBalanceHours[index].empPTOEmployeeBalanceHourID + '"';
-            xml += ' ptoYearId="' + $scope.ptoYearId + '"';
-            xml += ' ptoTypeId="' + $scope.empPTOBalanceHours[index].ptoType + '"';
-            xml += ' empPTOPlanAssignment="0"';
-            xml += ' balanceHours="' + $scope.empPTOBalanceHours[index].balanceHours + '"';
-            xml += '/>';
-        }
-        else if (action === "Save all Balance Hours") {
-            xml += '<updateBalanceHour';
-            xml += ' empPTOEmployeeBalanceHour="' + id + '"';
-            xml += ' ptoYearId="' + $scope.ptoYearId + '"';
-            xml += ' ptoTypeId="' + $scope.empBHptoType + '"';
-            xml += ' empPTOPlanAssignment="0"';
-            xml += ' balanceHours="' + $scope.empBH[index].emp.empPtoebhBalanceHours + '"';
-            xml += '/>';
-        }
-
-        if (xml === "")
-            return;
-        xml = '<transaction id="1">' + xml + '</transaction>';
-        console.log(xml)
-        var data = 'moduleId=emp&requestId=1&requestXml=' + encodeURIComponent(xml) + '&targetId=iiTransaction';
-        setStatus("Saving");
-        $scope.loadingTitle = " Saving...";
-        $scope.pageLoading = true;
-        transactionMonitor($scope, data, callback);
-    };
-
-
-
     return {
         getAuthorizations: getAuthorizations,
         getCurrentHouseCodeId: getCurrentHouseCodeId,
@@ -1054,8 +1086,8 @@ pto.factory('EmpActions', ["$http", "$filter", '$rootScope', function ($http, $f
         getPlanAssignments: getPlanAssignments,
         getSiteDetails: getSiteDetails,
         getPTODays: getPTODays,
-        actionSaveItem: actionSaveItem,
         getPTOBalanceHours: getPTOBalanceHours,
-        getReports: getReports
+        getReports: getReports,
+        actionSaveItem: actionSaveItem
     }
 }]);
