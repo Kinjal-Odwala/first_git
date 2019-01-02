@@ -15,6 +15,10 @@ var setStatus = function (status, message) {
     me.$itemModifiedImage = $("#itemModifiedImage");
     me.$itemStatusText = $("#itemStatusText");
 
+    me.$itemStatusImage = $("#itemStatusImage");
+    me.$itemModifiedImage = $("#itemModifiedImage");
+    me.$itemStatusText = $("#itemStatusText");
+
     if (message === "" || message === undefined) {
         if (status === "New")
             message = "New";
