@@ -1,238 +1,354 @@
 <div class="container bs-docs-container">
-	<form name="ptoForm">
-	    <div class="row margin-bottom10" style="padding-bottom: 10px;">
-	        <div class="form-group">
-	            <div class="col-md-2">
-	                <div id="itemStatusImage" class="itemStatusImage"></div>
-	                <div id="itemModifiedImage" class="itemModifiedImage"></div>
-	                <div id="itemStatusText"></div>
-	            </div>
-	        </div>
-	    </div>
-	    <div id="empPTOView">
-		    <tabset class="margin-bottom10">
-		        <tab heading="Unit Dashboard" ng-show="showPTODashboard" ng-click="tabClick(this)">
-		            <div id="mainView" ng-style="{'max-height': mainViewHeight + 'px'}">
-		            	<div class="row sectionHeader">Dashboard Info</div>
-			            <div class="row margin-bottom10" style="padding-top:10px;">
-							<div class="col-md-6">
-				                <label class="col-md-1 control-label" style="line-height:2;width:120px;">House Code:</label>
-				                <div class="col-md-4" style="padding-left:0px" id="houseCodeDropDown">
-				                    <pto-typeahead ng-model="dashboard.houseCodeId" source="hcmHouseCodes" typeahead-option="{displayField:'name',valueField:'id',name:'HcmHouseCode'}" ></pto-typeahead>
-				                </div>
-				                <label class="col-md-1 control-label" style="line-height:2;width:120px;">PTO Year:</label>
-				                <div class="col-md-2" style="padding-left:0px">
-				                    <select class="form-control input-sm" ng-model="ptoYear" ng-options="item.name for item in ptoYears" ng-change="onYearChange(ptoYear)"></select>  
-				                </div>
-				                <div class="col-md-2">
-				                    <a class="btn btn-primary" ng-click="actionDashboardItem()">Search</a>
-				                </div>
-							</div>
-							<div class="col-md-6">
-								<div class="row">
-			                    	<label class="col-md-1 control-label" style="width:120px;">State:</label>
-		                            <label class="col-md-1 control-label" style="width:200px;">{{site.stateTitle}}</label>
-									<label class="col-md-1 control-label" style="width:150px;">County:</label>
-		                            <label class="col-md-1 control-label" style="width:200px;">{{site.county}}</label>
-			                    </div>
-								<div class="row">
-			                    	<label class="col-md-1 control-label" style="width:120px;">City:</label>
-		                            <label class="col-md-1 control-label" style="width:200px;">{{site.city}}</label>
-									<label class="col-md-1 control-label" style="width:150px;">Total Employees:</label>
-		                            <label class="col-md-1 control-label" style="width:200px;">{{totalEmployees}}</label>
-			                    </div>
-							</div>
-			            </div>
-						<div class="row" style="padding-bottom:5px;"></div>
-						<div class="row">
-							<label class="col-md-2">Assigned Plans:</label>
-						</div>
-		            	<div class="row margin-bottom10">
-		                    <div class="col-md-6">
-		                        <table class="table-scroll table table-striped table-bordered table-hover" style="font-size:12px;width:100%;">
-		                            <thead>
-		                                <tr class="heading" role="row">
-		                                    <th width="5%" style="text-align:center">#</th>
-		                                    <th width="39%" style="text-align:center">Plan Name</th>
-		                                    <th width="15%" style="text-align:center">PTO Type</th>
-											<th width="15%" style="text-align:center"># of Employees</th>
-		                                    <th width="1%"></th>
-		                                </tr>
-		                            </thead>
-		                            <tbody style="width: 100%; height: 150px;">
-		                                <tr ng-repeat="item in planAssignments" ng-click="onPlanAssignmentSelected(item)" ng-class="{'warning':selectedPlanAssignment == item};">
-		                                    <td style="width:5%;text-align:center;line-height:normal">{{$index + 1}}</td>
-		                                    <td style="width:39%;text-align:left;line-height:normal">{{item.ptoPlanTitle}}</td>
-		                                    <td style="width:15%;text-align:left;line-height:normal">{{item.ptoTypeTitle}}</td>
-											<td style="width:15%;text-align:left;line-height:normal">{{item.totalEmployees}}</td>
-		                                 </tr>
-		                            </tbody>
-		                        </table>
-								<div class="row">
-									<label class="col-md-1">Employees:</label>
-										<div class="col-sm-6" style="float:right;">
-										<input type="text" class="form-control" placeholder="Filter by Employee First Name/Last Name..." ng-model="searchEmployee">
-									</div>
-								</div>
-								<table class="table-scroll table table-striped table-bordered table-hover" style="font-size:12px;width:100%;">
-		                            <thead>
-		                                <tr class="heading" role="row">
-		                                    <th style="text-align:center;width:5%">#</th>
-											<th style="text-align:center;width:4%">&nbsp;</th>
-											<th style="text-align:center;width:4%">&nbsp;</th>
-											<th width="22%" style="text-align:center">
-							                    <a href="#" ng-click="orderByField='firstName'; reverseSort = !reverseSort">First Name
-							                    	<span ng-show="orderByField == 'firstName' && !reverseSort">&#9660;</span>
-							                    	<span ng-show="orderByField == 'firstName' && reverseSort">&#9650;</span>
-							                    </a>
-							                </th>
-											<th width="22%" style="text-align:center">
-												<a href="#" ng-click="orderByField='lastName'; reverseSort = !reverseSort">Last Name
-							                    	<span ng-show="orderByField == 'lastName' && !reverseSort">&#9660;</span>
-							                    	<span ng-show="orderByField == 'lastName' && reverseSort">&#9650;</span>
-							                    </a>
-							                </th>
-											<th width="42%" style="text-align:center">
-							                    <a href="#" ng-click="orderByField='jobTitle'; reverseSort = !reverseSort">Job Title
-							                    	<span ng-show="orderByField == 'jobTitle' && !reverseSort">&#9660;</span>
-							                    	<span ng-show="orderByField == 'jobTitle' && reverseSort">&#9650;</span>
-							                    </a>
-							                </th>
-		                                    <th width="1%"></th>
-		                               </tr>
-		                            </thead>
-		                            <tbody style="width: 100%;" ng-style="{'height': employeeGridHeight + 'px'}">
-										<tr ng-repeat="item in employees | filter: searchEmployee | orderBy:orderByField:reverseSort" title={{showTitle(item)}} ng-click="onEmployeeSelected(item)" ng-class="{'warning':selectedEmployee == item};">
-		                                    <td style="width:4.8%;text-align:center;line-height:normal">{{$index + 1}}</td>
-											<td style="width:3.8%;text-align:center;line-height:normal"><center><img ng-show="{{item.status === 'Active'}}" src='/fin/cmn/usr/media/Common/green.png'><img ng-show="{{item.status !== 'Active'}}" src='/fin/cmn/usr/media/Common/yellow.png'></center></td>
-		                                    <td style="width:3.8%;text-align:center;line-height:normal"><center><input type="checkbox" ng-model="item.assigned"/></center></td>
-										    <td style="width:21.9%;text-align:left;line-height:normal">{{item.firstName}}</td>
-		                                    <td style="width:21.8%;text-align:left;line-height:normal">{{item.lastName}}</td>
-		                                    <td style="width:42%;text-align:left;line-height:normal">{{item.jobTitle}}</td>
-		                                 </tr>
-		                            </tbody>
-		                        </table>
-		                    </div>
-							<div class="col-md-6">								
-								<table class="table-scroll table table-striped table-bordered table-hover" style="font-size:12px;width:100%;">
-			                        <thead>
-			                            <tr class="heading" role="row">
-			                                <th style="text-align:center;width:5%">#</th>
-			                                <th style="text-align:center;width:30%">PTO Type</th>
-			                                <th style="text-align:center;width:20%">Balance Used</th>
-			                                <th style="text-align:center;width:20%">Balance Available</th>
-			                                <th style="width:1%"></th>
-			                            </tr>
-			                        </thead>
-			                        <tbody style="height: 150px;">
-			                            <tr ng-repeat="item in empPTOBalanceHours" ng-click="onPTOTypeSelected(item)" ng-class="{'warning':selectedPTOType == item};">
-			                                <td style="text-align:center;width:5%;line-height:normal">{{$index + 1}}</td>
-			                                <td style="text-align:left;width:30%;line-height:normal">{{item.ptoTypeTitle}}</td>
-			                                <td style="text-align:right;width:20%;line-height:normal">
-			                                    <a ng-show="item.ptoHours != '0.00' && item.ptoHours != '0'" class="ptoDays" href="" ng-click="showPTODates(item.ptoType)">{{item.ptoHours}}</a>
-			                                    <span ng-show="item.ptoHours == '0.00' || item.ptoHours == '0'">0.00</span>
-			                                </td>
-			                                <td style="text-align:right;width:20%;line-height:normal">{{item.balanceHours}}</td>
-			                            </tr>
-			                        </tbody>
-			                    </table>
-								<div class="row" style="padding-bottom:42px;"></div>
-								<div id="employeeView" ng-style="{'min-height': employeeViewHeight + 'px'}">
-									<div class="row">
-				                    	<label class="col-md-2 control-label">Employee #:</label>
-			                            <label class="col-md-2 control-label" style="padding-left:0px">{{selectedEmployee.employeeNumber}}</label>
-									</div>
-									<div class="row">
-										<label class="col-md-2 control-label">Status:</label>
-			                            <label class="col-md-2 control-label" style="padding-left:0px">{{selectedEmployee.status}}</label>
-									</div>
-									<div class="row">
-										<label class="col-md-2 control-label">Union:</label>
-			                            <label class="col-md-2 control-label" style="padding-left:0px">{{selectedEmployee.union}}</label>
-									</div>
-									<div class="row">
-										<label class="col-md-2 control-label">Plan Enrolled:</label>
-			                            <label class="col-md-8 control-label" style="padding-left:0px">{{selectedEmployee.enrolledPlans}}</label>
-									</div>
-								</div>
-								<div class="row" style="padding-bottom:25px;"></div>
-		                        <div>
-		                            <a class="btn btn-primary" ng-click="unitRosterItem()">Unit Roster</a>&nbsp;&nbsp;
-		                            <a class="btn btn-primary" ng-click="ptoStubItem()" ng-disabled="selectedEmployee === null || selectedPTOType === null">PTO Stub</a>&nbsp;&nbsp;
-                    				<a class="btn btn-primary" ng-click="showUnassignedEmployees()" ng-disabled="selectedPlanAssignment === null">UnAssigned Employees</a>
-		                        </div>
-			                </div>
-		            	</div>
-					</div>
-		        </tab>
-		    </tabset>
-		</div>
-        <div ng-show="isPageLoading()">
-            <div class="overlay"></div>
-            <div class="spinner">
-                <span class="glyphicon glyphicon-refresh glyphicon-spin"></span>{{loadingTitle}}
+        <form name="ptoForm">
+            <div class="row margin-bottom10" style="padding-bottom: 10px;">
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <div id="itemStatusImage" class="itemStatusImage"></div>
+                        <div id="itemModifiedImage" class="itemModifiedImage"></div>
+                        <div id="itemStatusText"></div>
+                    </div>
+                </div>
             </div>
-        </div>
-	</form>
+            <div id="empPTOView">
+                <tabset class="margin-bottom10">
+                    <tab heading="Unit Dashboard" ng-show="showUnitDashboard" ng-click="tabClick(this)">
+                        <div id="mainView">
+                            <div class="row sectionHeader">Dashboard Info</div>
+                            <div class="row margin-bottom10" style="padding-top:10px;">
+                                <div class="col-md-6">
+                                    <label class="col-md-1 control-label" style="line-height:2;width:120px;">House Code:</label>
+                                    <div class="col-md-4" style="padding-left:0px" id="houseCodeDropDown">
+                                        <pto-typeahead ng-model="dashboard.houseCodeId" source="hcmHouseCodes" typeahead-option="{displayField:'name',valueField:'id',name:'HcmHouseCode'}"></pto-typeahead>
+                                    </div>
+                                    <label class="col-md-1 control-label" style="line-height:2;width:120px;">PTO Year:</label>
+                                    <div class="col-md-2" style="padding-left:0px">
+                                        <select class="form-control input-sm" ng-model="ptoYear" ng-options="item.name for item in ptoYears" ng-change="onYearChange(ptoYear)"></select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <a class="btn btn-primary" ng-click="actionDashboardItem()">Search</a>
+                                    </div>
+                                    <div class="row" style="padding-bottom:25px;"></div>
+                                    <label class="col-md-1 control-label" style="width:120px;">State:</label>
+                                    <label class="col-md-1 control-label" style="width:200px;">{{site.stateTitle}}</label>
+                                    <label class="col-md-1 control-label" style="width:150px;">County:</label>
+                                    <label class="col-md-1 control-label" style="width:200px;">{{site.county}}</label>
+                                    <div class="row margin-bottom10" style="padding-top:10px;"> </div>
+                                    <label class="col-md-1 control-label" style="width:120px;">City:</label>
+                                    <label class="col-md-1 control-label" style="width:200px;">{{site.city}}</label>
+                                    <label class="col-md-1 control-label" style="width:150px;">Total Employees:</label>
+                                    <label class="col-md-1 control-label" style="width:200px;">{{totalEmployees}}</label>
+
+                                    <div class="row" style="padding-bottom:25px;"></div>
+                                    <div class="row">
+                                        <label class="col-md-6">Assigned Plans:</label>
+                                    </div>
+                                    <div class="row margin-bottom10">
+                                            <table class="table-scroll table table-striped table-bordered table-hover" style="font-size:12px;width:98%;margin-left:15px;">
+                                                <thead>
+                                                    <tr class="heading" role="row">
+                                                        <th style="width:5%;text-align:center">#</th>
+                                                        <th style=" width:39%;text-align:center">Plan Name</th>
+                                                        <th style="width:15% ;text-align:center">PTO Type</th>
+                                                        <th style="width:15% ;text-align:center"># of Employees</th>
+                                                        <th width="1%"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody ng-style="{'height': AssignedPlanViewHeight + 'px'}" style="width: 100%;">
+                                                    <tr ng-repeat="item in planAssignments" ng-click="onPlanAssignmentSelected(item)" ng-class="{'warning':selectedPlanAssignment == item};">
+                                                        <td style="width:5%;text-align:center;line-height:normal">{{$index + 1}}</td>
+                                                        <td style="width:39%;text-align:left;line-height:normal">{{item.ptoPlanTitle}}</td>
+                                                        <td style="width:15%;text-align:left;line-height:normal">{{item.ptoTypeTitle}}</td>
+                                                        <td style="width:15%;text-align:left;line-height:normal">{{item.totalEmployees}}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <label class="col-md-1">Employees:</label>
+                                        <div class="col-sm-6" style="float:right;">
+                                            <input type="text" class="form-control" placeholder="Filter by Employee First Name/Last Name..." ng-model="searchEmployee">
+                                        </div>
+                                    </div>
+                                    <table class="table-scroll table table-striped table-bordered table-hover" style="font-size:12px;width:100%;height:150px">
+                                        <thead>
+                                            <tr class="heading" role="row">
+                                                <th style="text-align:center;width:5%">#</th>
+                                                <th style="text-align:center;width:4%">&nbsp;</th>
+                                                <th style="text-align:center;width:4%">&nbsp;</th>
+                                                <th width="22%" style="text-align:center">
+                                                    <a href="#" ng-click="orderByField='firstName'; reverseSort = !reverseSort">
+                                                        First Name
+                                                        <span ng-show="orderByField == 'firstName' && !reverseSort">&#9660;</span>
+                                                        <span ng-show="orderByField == 'firstName' && reverseSort">&#9650;</span>
+                                                    </a>
+                                                </th>
+                                                <th width="22%" style="text-align:center">
+                                                    <a href="#" ng-click="orderByField='lastName'; reverseSort = !reverseSort">
+                                                        Last Name
+                                                        <span ng-show="orderByField == 'lastName' && !reverseSort">&#9660;</span>
+                                                        <span ng-show="orderByField == 'lastName' && reverseSort">&#9650;</span>
+                                                    </a>
+                                                </th>
+                                                <th width="42%" style="text-align:center">
+                                                    <a href="#" ng-click="orderByField='jobTitle'; reverseSort = !reverseSort">
+                                                        Job Title
+                                                        <span ng-show="orderByField == 'jobTitle' && !reverseSort">&#9660;</span>
+                                                        <span ng-show="orderByField == 'jobTitle' && reverseSort">&#9650;</span>
+                                                    </a>
+                                                </th>
+                                                <th width="1%"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody ng-style="{'height': employeelistViewHeight + 'px'}" style="width: 100%;overflow-y: scroll;">
+                                            <tr ng-repeat="item in employees | filter: searchEmployee | orderBy:orderByField:reverseSort" title={{showTitle(item)}} ng-click="onEmployeeSelected(item)" ng-class="{'warning':selectedEmployee == item};">
+                                                <td style="width:4.8%;text-align:center;line-height:normal">{{$index + 1}}</td>
+                                                <td style="width:3.8%;text-align:center;line-height:normal"><center><img ng-show="{{item.status === 'Active'}}" src='/fin/cmn/usr/media/Common/green.png'><img ng-show="{{item.status !== 'Active'}}" src='/fin/cmn/usr/media/Common/yellow.png'></center></td>
+                                                <td style="width:3.8%;text-align:center;line-height:normal"><center><input type="checkbox" ng-model="item.assigned" /></center></td>
+                                                <td style="width:21.9%;text-align:left;line-height:normal">{{item.firstName}}</td>
+                                                <td style="width:21.8%;text-align:left;line-height:normal">{{item.lastName}}</td>
+                                                <td style="width:42%;text-align:left;line-height:normal">{{item.jobTitle}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div id="employeeView" ng-style="{'min-height': employeeViewHeight + 'px'}">
+                                        <div class="row">
+                                            <label class="col-md-2 control-label subheading">{{selectedEmployee.firstName}} {{selectedEmployee.lastName}}</label>
+                                        </div>
+                                        <div class="row">
+                                            <label class="col-md-2 control-label">Employee #:</label>
+                                            <label class="col-md-2 control-label" style="padding-left:0px">{{selectedEmployee.employeeNumber}}</label>
+                                        </div>
+                                        <div class="row">
+                                            <label class="col-md-2 control-label">Status:</label>
+                                            <label class="col-md-2 control-label" style="padding-left:0px">{{selectedEmployee.status}}</label>
+                                        </div>
+                                        <div class="row">
+                                            <label class="col-md-2 control-label">Union:</label>
+                                            <label class="col-md-2 control-label" style="padding-left:0px">{{selectedEmployee.union}}</label>
+                                        </div>
+                                        <div class="row">
+                                            <label class="col-md-2 control-label">Plan Enrolled:</label>
+                                            <label class="col-md-8 control-label" style="padding-left:0px">{{selectedEmployee.enrolledPlans}}</label>
+                                        </div>
+                                        <!--</div>
+                                        <div class="row" style="padding-bottom:25px;"></div>-->
+                                        <table class="table-scroll table table-striped table-bordered table-hover" style="font-size:12px;width:100%;margin-bottom:0px;">
+                                            <thead>
+                                                <tr class="heading" role="row">
+                                                    <th style="text-align:center;width:5%">#</th>
+                                                    <th style="text-align:center;width:30%">PTO Type</th>
+                                                    <th style="text-align:center;width:20%">Balance Used</th>
+                                                    <th style="text-align:center;width:20%">Balance Available</th>
+                                                    <th style="width:1%"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody style="height: 150px;">
+                                                <tr ng-repeat="item in empPTOBalanceHours" ng-click="onPTOTypeSelected(item)" ng-class="{'warning':selectedPTOType == item};">
+                                                    <td style="text-align:center;width:5%;line-height:normal">{{$index + 1}}</td>
+                                                    <td style="text-align:left;width:30%;line-height:normal">{{item.ptoTypeTitle}}</td>
+                                                    <td style="text-align:right;width:20%;line-height:normal">
+                                                        <a ng-show="item.ptoHours != '0.00' && item.ptoHours != '0'" class="ptoDays" href="" ng-click="showPTODates(item.ptoType)">{{item.ptoHours}}</a>
+                                                        <span ng-show="item.ptoHours == '0.00' || item.ptoHours == '0'">0.00</span>
+                                                    </td>
+                                                    <td style="text-align:right;width:14%;line-height:normal">
+                                                        <center><input type="text" name="balanceHours" maxlength="6" ng-change="updateBalanceAvailable($index, item.balanceHours)" ng-model="item.balanceHours" pto-Decimal /></center>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="row" style="padding-bottom:15px;"></div>
+                                    <div>
+                                        <a class="btn btn-primary" ng-click="unitRosterItem()">Unit Roster</a>&nbsp;&nbsp;
+                                        <a class="btn btn-primary" ng-click="ptoStubItem()" ng-disabled="selectedEmployee === null || selectedPTOType === null">PTO Stub</a>&nbsp;&nbsp;
+                                        <a class="btn btn-primary" ng-click="showUnassignedEmployees()" ng-disabled="selectedPlanAssignment === null">UnAssigned Employees</a>&nbsp;&nbsp;
+                                        <a class="btn btn-primary" ng-click="saveBalanceHours()" ng-disabled="selectedEmployee === null || selectedPTOType === null">Save</a>&nbsp;&nbsp;
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </tab>
+                    <tab heading="Balance Hours" ng-show="showBalanceHours" ng-click="tabClick(this)">
+                        <div id="mainView">
+                            <div class="row sectionHeader">Balance hours</div>
+                            <div class="row margin-bottom10" style="padding-top:10px;">
+                                <div class="col-md-6">
+                                    <label class="col-md-1 control-label" style="line-height:2;width:120px;">House Code:</label>
+                                    <div class="col-md-4" style="padding-left:0px" id="houseCodeDropDown">
+                                        <pto-typeahead ng-model="dashboard.houseCodeId" source="hcmHouseCodes" typeahead-option="{displayField:'name',valueField:'id',name:'HcmHouseCode'}"></pto-typeahead>
+                                    </div>
+                                    <label class="col-md-1 control-label" style="line-height:2;width:120px;">PTO Year:</label>
+                                    <div class="col-md-2" style="padding-left:0px">
+                                        <select class="form-control input-sm" ng-model="ptoYear" ng-options="item.name for item in ptoYears" ng-change="onYearChangeBH(ptoYear)"></select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <a class="btn btn-primary" ng-click="actionBalancehoursItem()">Search</a>
+                                    </div>
+                                </div>
+                                <div class="row" style="padding-bottom:20px;"></div>
+                                <div class="col-md-12">
+                                    <div class="row">
+                                        <label class="col-md-1">Employees:</label>
+                                        <div class="col-sm-6" style="float:right;">
+                                            <input type="text" class="form-control" placeholder="Filter by Employee First Name/Last Name..." ng-model="searchBalanceHourEmployee">
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table-scroll table table-striped table-bordered table-hover" style="font-size:12px;width:100%;">
+                                            <thead>
+                                                <tr class="heading" role="row" style="display:inline-flex">
+                                                    <th style="text-align:center;width:4%"></th>
+                                                    <th style="text-align:center;width:29.7%"></th>
+                                                    <th style="text-align:center;width:16.3%">Vacation</th>
+                                                    <th style="text-align:center;width:16.3%">Sick</th>
+                                                    <th style="text-align:center;width:16.3%">PTO</th>
+                                                    <th style="text-align:center;width:17.4%">Personal</th>
+                                                </tr>
+                                                <tr class="heading" role="row" style="display:inline-flex">
+                                                    <th style="text-align:center;width:4%">#</th>
+                                                    <th style="text-align:center;width:8.9%">
+                                                        <a href="#" ng-click="orderByField='firstName'; reverseSort = !reverseSort">
+                                                            First Name
+                                                            <span ng-show="orderByField == 'firstName' && !reverseSort">&#9660;</span>
+                                                            <span ng-show="orderByField == 'firstName' && reverseSort">&#9650;</span>
+                                                        </a>
+                                                    </th>
+                                                    <th style="text-align:center;width:8.9%">
+                                                        <a href="#" ng-click="orderByField='lastName'; reverseSort = !reverseSort">
+                                                            Last Name
+                                                            <span ng-show="orderByField == 'lastName' && !reverseSort">&#9660;</span>
+                                                            <span ng-show="orderByField == 'lastName' && reverseSort">&#9650;</span>
+                                                        </a>
+                                                    </th>
+                                                    <th style="text-align:center;width:11.9%">
+                                                        <a href="#" ng-click="orderByField='jobTitle'; reverseSort = !reverseSort">
+                                                            Job Title
+                                                            <span ng-show="orderByField == 'jobTitle' && !reverseSort">&#9660;</span>
+                                                            <span ng-show="orderByField == 'jobTitle' && reverseSort">&#9650;</span>
+                                                        </a>
+                                                    </th>
+                                                    <th style="text-align:center;width:7.9%">Balance Used</th>
+                                                    <th style="text-align:center;width:8.4%">Balance Available</th>
+                                                    <th style="text-align:center;width:7.9%">Balance Used</th>
+                                                    <th style="text-align:center;width:8.4%">Balance Available</th>
+                                                    <th style="text-align:center;width:7.9%">Balance Used</th>
+                                                    <th style="text-align:center;width:8.4%">Balance Available</th>
+                                                    <th style="text-align:center;width:7.9%">Balance Used</th>
+                                                    <th style="text-align:center;width:8.4%">Balance Available</th>
+                                                    <th style="width:1%"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody ng-style="{'height': BalanceHourViewHeight + 'px'}" style="width: 100%;overflow-y: scroll;">
+                                                <tr style="display:inline-flex;" ng-repeat="item in employeesBH track by $index | filter: searchBalanceHourEmployee | orderBy:orderByField:reverseSort">
+                                                    <td style="width:4%;text-align:center;line-height:normal">{{$index + 1}}</td>
+                                                    <td style="width:9%;text-align:left;line-height:normal">{{item.firstName}}</td>
+                                                    <td style="width:9%;text-align:left;line-height:normal">{{item.lastName}}</td>
+                                                    <td style="width:12%;text-align:left;line-height:normal;">{{item.jobTitle}}</td>
+                                                    <td style="text-align:left;line-height:normal;width:8%">{{item.vacationBalanceHourId == '0' ? 'NA' : item.vacationBalanceUsed}}</td>
+                                                    <td style="text-align:left;line-height:normal;width:8.5%">
+                                                        <center><input type="text" name="txt1_balanceHours" ng-class="{'has-error':ptoForm.txt1_balanceHours.$invalid}" maxlength="6" style="width:120px;" ng-show="item.vacationBalanceHourId != '0'" ng-change="updateBalanceHours($index, item, 1)" ng-model="item.vacationAvailable" ng-required="true" pto-Decimal /></center>
+                                                        <center><label name="lbl1_balanceHours" style="width:120px;font-weight:normal;text-align:left" ng-show="(item.vacationBalanceHourId == '0')">NA</label></center>
+                                                    </td>
+                                                    <td style="text-align:left;line-height:normal;width:8%">{{item.sickBalanceHourId == '0' ? 'NA' : item.sickBalanceUsed}}</td>
+                                                    <td style="text-align:left;line-height:normal;width:8.5%">
+                                                        <center><input type="text" name="txt2_balanceHours" ng-class="{'has-error':ptoForm.txt2_balanceHours.$invalid}" maxlength="6" style="width:120px;" ng-show="item.sickBalanceHourId != '0'" ng-change="updateBalanceHours($index, item, 2)" ng-model="item.sickAvailable" ng-required="true" pto-Decimal /></center>
+                                                        <center><label name="lbl2_balanceHours" style="width:120px;font-weight:normal;text-align:left" ng-show="(item.sickBalanceHourId == '0')">NA</label></center>
+                                                    </td>
+                                                    <td style="text-align:left;line-height:normal;width:8%">{{item.ptoBalanceHourId == '0' ? 'NA' : item.ptoBalanceUsed}}</td>
+                                                    <td style="text-align:left;line-height:normal;width:8.5%">
+                                                        <center><input type="text" name="txt3_balanceHours" ng-class="{'has-error':ptoForm.txt3_balanceHours.$invalid}" maxlength="6" style="width:120px;" ng-show="item.ptoBalanceHourId != '0'" ng-change="updateBalanceHours($index, item, 3)" ng-model="item.ptoAvailable" ng-required="true" pto-Decimal /></center>
+                                                        <center><label name="lbl3_balanceHours" style="width:120px;font-weight:normal;text-align:left" ng-show="(item.ptoBalanceHourId == '0')">NA</label></center>
+                                                    </td>
+                                                    <td style="text-align:left;line-height:normal;width:8%">{{item.personalBalanceHourId == '0' ? 'NA' : item.personalBalanceUsed}}</td>
+                                                    <td style="text-align:left;line-height:normal;width:8.5%">
+                                                        <center><input type="text" name="txt4_balanceHours" ng-class="{'has-error':ptoForm.txt4_balanceHours.$invalid}" maxlength="6" style="width:120px;" ng-show="item.personalBalanceHourId != '0'" ng-change="updateBalanceHours($index, item, 4)" ng-model="item.personalAvailable" ng-required="true" pto-Decimal /></center>
+                                                        <center><label name="lbl4_balanceHours" style="width:120px;font-weight:normal;text-align:left" ng-show="(item.personalBalanceHourId == '0')">NA</label></center>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="row"></div>
+                                <div style="margin-left:15px;">
+                                   <a class="btn btn-primary" ng-click="saveAllBalanceHours()">Save</a>&nbsp;&nbsp;
+                                    <a class="btn btn-primary" ng-click="undoBalanceHours()">Undo</a>
+                                </div>
+                            </div>
+                        </div>
+        		    </tab>
+        	    </tabset>
+		    </div>
+		    <div ng-show="isPageLoading()">
+		        <div class="overlay"></div>
+		        <div class="spinner">
+		            <span class="glyphicon glyphicon-refresh glyphicon-spin"></span>{{loadingTitle}}
+		        </div>
+		    </div>
+        </form>
 </div>
 <script type="text/ng-template" id="ptoDates.htm">
     <form name="datesInfoForm">
-	    <div id="dateModal" class="modal-content" style="width:600px;max-height:600px;min-height:600px;">
-			<div class="row" style="padding-bottom:10px;"></div>
-	        <div style="font-weight:bold;font-size: 18px;text-align: center;font-family: Verdana;">PTO Taken</div>
-	        <div class="modal-body" id="dateTable" style="padding-bottom:0px">
-	        	<table class="table-scroll table table-striped table-bordered table-hover" style="width:600px;">
-			        <thead>
-			            <tr class="gridHeader" role="row">
-			                <th width="70px" style="text-align:center;">#</th>
-			                <th width="300" style="text-align:center;">Date</th>
+        <div id="dateModal" class="modal-content" style="width:600px;max-height:600px;min-height:600px;">
+            <div class="row" style="padding-bottom:10px;"></div>
+            <div style="font-weight:bold;font-size: 18px;text-align: center;font-family: Verdana;">PTO Taken</div>
+            <div class="modal-body" id="dateTable" style="padding-bottom:0px">
+                <table class="table-scroll table table-striped table-bordered table-hover" style="width:600px;">
+                    <thead>
+                        <tr class="gridHeader" role="row">
+                            <th width="70px" style="text-align:center;">#</th>
+                            <th width="300" style="text-align:center;">Date</th>
                             <th width="220px" style="text-align:center;">Hours</th>
-			                <th width="10px"></th>
-			            </tr>
-			        </thead>
-			        <tbody style="max-height:400px;min-height:400px;">
-			            <tr ng-repeat="item in ptoDates track by $index">
-			                <td width="70px" align ="center">{{$index + 1}}</td>
-			                <td style="width:300px">{{item.ptoDate}}</td>
+                            <th width="10px"></th>
+                        </tr>
+                    </thead>
+                    <tbody style="max-height:400px;min-height:400px;">
+                        <tr ng-repeat="item in ptoDates track by $index">
+                            <td width="70px" align="center">{{$index + 1}}</td>
+                            <td style="width:300px">{{item.ptoDate}}</td>
                             <td style="text-align:right;width:220px">{{item.hours}}</td>
-			             </tr>
-			        </tbody>
-	    		</table>
-	    	</div>
-	        <div class="modal-footer">
-	            <button type="button" class="btn btn-primary" ng-click="cancel()">Close</button>
-	        </div>
-	    </div>
-	</form>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" ng-click="cancel()">Close</button>
+            </div>
+        </div>
+    </form>
 </script>
 <script type="text/ng-template" id="unAssignedEmployee.htm">
     <form name="employeesInfoForm">
-	    <div id="employeeModal" class="modal-content" style="width:900px;" ng-style="{'min-height': employeeModalHeight + 'px'}">
-	        <div style="font-weight:bold;font-size: 18px;text-align: center;font-family: Verdana;">Unassigned Employees</div>
-	        <div class="modal-body" id="employeesTable" style="padding-bottom:0px">
-	        	<table class="table-scroll table table-striped table-bordered table-hover" style="font-size:12px;width:100%;">
-					<thead>
-					    <tr class="heading" role="row">
-					        <th width="5%" style="text-align:center">#</th>
-					        <th width="22%" style="text-align:center">First Name</th>
-					        <th width="22%" style="text-align:center">Last Name</th>
-					        <th width="50%" style="text-align:center">Job Title</th>
-					        <th width="1%"></th>
-					   </tr>
-					</thead>
+        <div id="employeeModal" class="modal-content" style="width:900px;" ng-style="{'min-height': employeeModalHeight + 'px'}">
+            <div style="font-weight:bold;font-size: 18px;text-align: center;font-family: Verdana;">Unassigned Employees</div>
+            <div class="modal-body" id="employeesTable" style="padding-bottom:0px">
+                <table class="table-scroll table table-striped table-bordered table-hover" style="font-size:12px;width:100%;">
+                    <thead>
+                        <tr class="heading" role="row">
+                            <th width="5%" style="text-align:center">#</th>
+                            <th width="22%" style="text-align:center">First Name</th>
+                            <th width="22%" style="text-align:center">Last Name</th>
+                            <th width="50%" style="text-align:center">Job Title</th>
+                            <th width="1%"></th>
+                        </tr>
+                    </thead>
                     <tbody style="width:100%" ng-style="{'min-height': employeeTableHeight + 'px'}">
                         <tr ng-repeat="item in unAssignedEmployees">
                             <td width="4.9%" align="center">{{$index + 1}}</td>
                             <td width="21.9%" align="left">{{item.firstName}}</td>
                             <td width="21.9%" align="left">{{item.lastName}}</td>
                             <td width="50%" align="left">{{item.jobTitle}}</td>
-                         </tr>
+                        </tr>
                     </tbody>
                 </table>
-	    	</div>
-	        <div class="modal-footer">
-	            <button type="button" class="btn btn-primary" ng-click="cancel()">Close</button>
-	        </div>
-	    </div>
-	</form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" ng-click="cancel()">Close</button>
+            </div>
+        </div>
+    </form>
 </script>
